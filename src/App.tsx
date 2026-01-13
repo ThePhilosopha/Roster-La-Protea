@@ -2,8 +2,6 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 
 // --- UTILITIES & TYPES ---
 
-const cn = (...classes: (string | undefined | null | false)[]) => classes.filter(Boolean).join(' ');
-
 type ShiftType = 'Normal' | 'Half';
 type EmploymentStatus = 'Permanent' | 'Casual';
 type DisplayMode = 'dots' | 'colors';
