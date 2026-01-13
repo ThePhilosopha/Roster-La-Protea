@@ -1,0 +1,118 @@
+/* === GLOBAL STYLES === */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+}
+
+/* === CSS CUSTOM PROPERTIES === */
+:root {
+  --color-black: #12100E;
+  --color-white: #F2EFE9;
+  --color-gray: #5C554F;
+  --color-dark-beige: #CFC8BC;
+  --color-dark-brown: #2A231E;
+  --color-accent: #8F3434;
+}
+
+/* === DARK MODE === */
+.dark {
+  color-scheme: dark;
+}
+
+/* === UTILITY CLASSES === */
+.font-serif {
+  font-family: 'Cormorant', Georgia, serif;
+}
+
+.font-sans {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* === SCROLLBAR STYLING === */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-gray);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-black);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--color-dark-beige);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--color-white);
+}
+
+/* === ANIMATIONS === */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.6s ease-out;
+}
+
+/* === ROSTER HOVER HIGHLIGHTS === */
+.roster-row:hover {
+  background: rgba(143, 52, 52, 0.08) !important;
+}
+
+.roster-row:hover td {
+  background: rgba(143, 52, 52, 0.08) !important;
+}
+
+.roster-row:hover td:first-child {
+  background: linear-gradient(90deg, var(--row-bg, #F2EFE9) 85%, rgba(143, 52, 52, 0.08) 100%) !important;
+}
+
+.dark .roster-row:hover td:first-child {
+  background: linear-gradient(90deg, var(--row-bg, #2A231E) 85%, rgba(143, 52, 52, 0.15) 100%) !important;
+}
+
+.roster-cell:hover {
+  background: rgba(143, 52, 52, 0.15) !important;
+  transform: scale(1.05);
+  transition: all 0.15s ease;
+}
+
+/* Print button styling */
+.print-btn {
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.print-btn:hover {
+  opacity: 1 !important;
+  transform: scale(1.05);
+}

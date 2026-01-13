@@ -1,0 +1,90 @@
+/* === PRINT STYLESHEET === */
+@media print {
+
+    /* Page setup */
+    @page {
+        size: A4 landscape;
+        margin: 1cm;
+    }
+
+    /* Reset backgrounds for printing */
+    body {
+        background: white !important;
+        color: black !important;
+        font-size: 10pt;
+    }
+
+    /* Hide interactive elements */
+    button,
+    .admin-modal,
+    [role="button"] {
+        display: none !important;
+    }
+
+    /* Ensure header prints nicely */
+    header {
+        page-break-after: avoid;
+        margin-bottom: 0.5cm !important;
+    }
+
+    h1 {
+        font-size: 24pt !important;
+        letter-spacing: 0.2em !important;
+        color: black !important;
+    }
+
+    /* Table styling for print */
+    table {
+        width: 100% !important;
+        border-collapse: collapse;
+        font-size: 8pt;
+    }
+
+    th,
+    td {
+        border: 0.5pt solid #ccc !important;
+        padding: 4pt !important;
+        background: white !important;
+        color: black !important;
+    }
+
+    /* Sticky columns don't need to be sticky in print */
+    th:first-child,
+    td:first-child {
+        position: static !important;
+        box-shadow: none !important;
+    }
+
+    /* Make dots visible in print */
+    [style*="border-radius: 50%"] {
+        border-color: black !important;
+        background: black !important;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    /* Hollow dots */
+    [style*="border: 2px solid"] {
+        background: transparent !important;
+    }
+
+    /* Legend - keep visible */
+    main>div:last-child {
+        margin-top: 0.5cm !important;
+        page-break-inside: avoid;
+    }
+
+    /* Hide scrollbars and shadows */
+    ::-webkit-scrollbar {
+        display: none;
+    }
+
+    * {
+        box-shadow: none !important;
+    }
+
+    /* Avoid page breaks inside rows */
+    tr {
+        page-break-inside: avoid;
+    }
+}
