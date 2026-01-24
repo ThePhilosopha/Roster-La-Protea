@@ -117,7 +117,7 @@ const getShiftTimes = (staff: StaffMember, dateStr: string, shiftType: ShiftType
 
 // --- DATA HOOK ---
 
-import { supabase } from './supabaseClient';
+import { supabase, isSupabaseConfigured } from './supabaseClient';
 
 const FALLBACK_STAFF: StaffMember[] = [
     { id: '1', name: 'Shane', role: 'Manager', cycleStartDate: '2024-01-01', patternOn: 5, patternOff: 2, shiftType: 'Normal', status: 'Permanent' },
@@ -770,6 +770,7 @@ const AdminModal: React.FC<{
     const [activeTab, setActiveTab] = useState('staff');
     const [localStaff, setLocalStaff] = useState<StaffMember[]>(staffData);
     const [isAdding, setIsAdding] = useState(false);
+    const [isEditing, setIsEditing] = useState<string | null>(null);
     const [editForm, setEditForm] = useState<Partial<StaffMember>>({});
 
     useEffect(() => { setLocalStaff(staffData); }, [staffData, isOpen]);
@@ -796,6 +797,7 @@ const AdminModal: React.FC<{
             : localStaff.map(s => s.id === editForm.id ? editForm as StaffMember : s);
         onUpdateStaff(newStaff);
         setIsAdding(false);
+        setIsEditing(null);
         setEditForm({});
     };
 
@@ -1058,16 +1060,76 @@ const AdminModal: React.FC<{
                                 )}
 
                                 {localStaff.map(s => (
-                                    <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', borderBottom: `1px solid ${darkMode ? 'rgba(242,239,233,0.1)' : 'rgba(18,16,14,0.1)'}` }}>
-                                        <div>
-                                            <div className="font-serif" style={{ fontWeight: 700, color: textColor }}>{s.name}</div>
-                                            <div style={{ fontSize: '9px', textTransform: 'uppercase', color: textColor }}>{s.role}</div>
-                                        </div>
-                                        <button
-                                            onClick={() => handleDelete(s.id)}
-                                            className="font-sans"
-                                            style={{ fontSize: '9px', textTransform: 'uppercase', color: '#8F3434', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer' }}
-                                        >Remove</button>
+                                    <div key={s.id} style={{ borderBottom: `1px solid ${darkMode ? 'rgba(242,239,233,0.1)' : 'rgba(18,16,14,0.1)'}` }}>
+                                        {isEditing === s.id ? (
+                                            <div style={{ background: darkMode ? 'rgba(242,239,233,0.05)' : 'rgba(18,16,14,0.05)', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                                <input
+                                                    placeholder="Name"
+                                                    value={editForm.name || ''}
+                                                    onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+                                                    style={{ width: '100%', padding: '0.5rem', background: 'transparent', borderBottom: `1px solid ${borderColor}`, border: 'none', borderBottomWidth: '1px', borderBottomStyle: 'solid', color: textColor }}
+                                                />
+                                                <input
+                                                    placeholder="Role / Position"
+                                                    value={editForm.role || ''}
+                                                    onChange={e => setEditForm({ ...editForm, role: e.target.value })}
+                                                    style={{ width: '100%', padding: '0.5rem', background: 'transparent', borderBottom: `1px solid ${borderColor}`, border: 'none', borderBottomWidth: '1px', borderBottomStyle: 'solid', color: textColor }}
+                                                />
+                                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                    <input
+                                                        type="number"
+                                                        placeholder="Days On"
+                                                        value={editForm.patternOn}
+                                                        onChange={e => setEditForm({ ...editForm, patternOn: parseInt(e.target.value) })}
+                                                        style={{ width: '50%', padding: '0.5rem', background: 'transparent', borderBottom: `1px solid ${borderColor}`, border: 'none', borderBottomWidth: '1px', borderBottomStyle: 'solid', color: textColor }}
+                                                    />
+                                                    <input
+                                                        type="number"
+                                                        placeholder="Days Off"
+                                                        value={editForm.patternOff}
+                                                        onChange={e => setEditForm({ ...editForm, patternOff: parseInt(e.target.value) })}
+                                                        style={{ width: '50%', padding: '0.5rem', background: 'transparent', borderBottom: `1px solid ${borderColor}`, border: 'none', borderBottomWidth: '1px', borderBottomStyle: 'solid', color: textColor }}
+                                                    />
+                                                </div>
+                                                <input
+                                                    type="date"
+                                                    value={editForm.cycleStartDate}
+                                                    onChange={e => setEditForm({ ...editForm, cycleStartDate: e.target.value })}
+                                                    style={{ width: '100%', padding: '0.5rem', background: 'transparent', borderBottom: `1px solid ${borderColor}`, border: 'none', borderBottomWidth: '1px', borderBottomStyle: 'solid', color: textColor }}
+                                                />
+                                                <div style={{ display: 'flex', gap: '0.5rem', paddingTop: '0.5rem' }}>
+                                                    <button
+                                                        onClick={handleSaveStaff}
+                                                        className="font-sans"
+                                                        style={{ flex: 1, background: textColor, color: bgColor, fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700, padding: '0.5rem', border: 'none', cursor: 'pointer' }}
+                                                    >Save</button>
+                                                    <button
+                                                        onClick={() => { setIsEditing(null); setEditForm({}); }}
+                                                        className="font-sans"
+                                                        style={{ flex: 1, border: `1px solid ${borderColor}`, color: textColor, fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700, padding: '0.5rem', background: 'transparent', cursor: 'pointer' }}
+                                                    >Cancel</button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem' }}>
+                                                <div>
+                                                    <div className="font-serif" style={{ fontWeight: 700, color: textColor }}>{s.name}</div>
+                                                    <div style={{ fontSize: '9px', textTransform: 'uppercase', color: textColor, opacity: 0.7 }}>{s.role}</div>
+                                                </div>
+                                                <div style={{ display: 'flex', gap: '1rem' }}>
+                                                    <button
+                                                        onClick={() => { setIsEditing(s.id); setEditForm({ ...s }); }}
+                                                        className="font-sans"
+                                                        style={{ fontSize: '9px', textTransform: 'uppercase', color: '#4A90A4', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer' }}
+                                                    >Edit</button>
+                                                    <button
+                                                        onClick={() => handleDelete(s.id)}
+                                                        className="font-sans"
+                                                        style={{ fontSize: '9px', textTransform: 'uppercase', color: '#8F3434', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer' }}
+                                                    >Remove</button>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -1138,6 +1200,8 @@ const App: React.FC = () => {
         };
         reader.readAsText(file);
     }, [updateStaffData]);
+
+    // Note: Supabase config check removed - app will use fallback data if not configured
 
     return (
         <div style={{
