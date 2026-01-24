@@ -117,7 +117,7 @@ const getShiftTimes = (staff: StaffMember, dateStr: string, shiftType: ShiftType
 
 // --- DATA HOOK ---
 
-import { supabase, isSupabaseConfigured } from './supabaseClient';
+import { supabase } from './supabaseClient';
 
 const FALLBACK_STAFF: StaffMember[] = [
     { id: '1', name: 'Shane', role: 'Manager', cycleStartDate: '2024-01-01', patternOn: 5, patternOff: 2, shiftType: 'Normal', status: 'Permanent' },
