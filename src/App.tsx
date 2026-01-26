@@ -776,7 +776,7 @@ const AdminModal: React.FC<{
     onLogin: () => void;
     onLogout: () => void;
     staffData: StaffMember[];
-    onUpdateStaff: (staff: StaffMember[]) => void;
+    onUpdateStaff: (staff: StaffMember[]) => Promise<void>;
     onImport: (file: File) => void;
     onExport: () => void;
     darkMode: boolean;
@@ -788,8 +788,11 @@ const AdminModal: React.FC<{
     const [isAdding, setIsAdding] = useState(false);
     const [isEditing, setIsEditing] = useState<string | null>(null);
     const [editForm, setEditForm] = useState<Partial<StaffMember>>({});
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-    useEffect(() => { setLocalStaff(staffData); }, [staffData, isOpen]);
+    useEffect(() => { setLocalStaff(staffData); setHasUnsavedChanges(false); }, [staffData, isOpen]);
 
     if (!isOpen) return null;
 
@@ -803,7 +806,10 @@ const AdminModal: React.FC<{
     };
 
     const handleDelete = (id: string) => {
-        if (confirm('Remove staff member?')) onUpdateStaff(localStaff.filter(s => s.id !== id));
+        if (confirm('Remove staff member?')) {
+            setLocalStaff(localStaff.filter(s => s.id !== id));
+            setHasUnsavedChanges(true);
+        }
     };
 
     const handleSaveStaff = () => {
@@ -811,10 +817,26 @@ const AdminModal: React.FC<{
         const newStaff = isAdding
             ? [...localStaff, editForm as StaffMember]
             : localStaff.map(s => s.id === editForm.id ? editForm as StaffMember : s);
-        onUpdateStaff(newStaff);
+        setLocalStaff(newStaff);
+        setHasUnsavedChanges(true);
         setIsAdding(false);
         setIsEditing(null);
         setEditForm({});
+    };
+
+    const handleSaveAllChanges = async () => {
+        setIsSaving(true);
+        setSaveMessage(null);
+        try {
+            await onUpdateStaff(localStaff);
+            setHasUnsavedChanges(false);
+            setSaveMessage({ type: 'success', text: 'Changes saved to Supabase!' });
+            setTimeout(() => setSaveMessage(null), 3000);
+        } catch (error) {
+            setSaveMessage({ type: 'error', text: 'Failed to save. Please try again.' });
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -855,8 +877,13 @@ const AdminModal: React.FC<{
                         border: 'none',
                         cursor: 'pointer'
                     }}
-                >Close</button>
-                <h2 className="font-serif" style={{ fontSize: '1.875rem', marginBottom: '1rem', color: textColor }}>Admin Portal</h2>
+                >{hasUnsavedChanges ? '×' : 'Close'}</button>
+                <h2 className="font-serif" style={{ fontSize: '1.875rem', marginBottom: '0.5rem', color: textColor }}>Admin Portal</h2>
+                {hasUnsavedChanges && (
+                    <div className="font-sans" style={{ fontSize: '11px', color: '#D4A017', marginBottom: '1rem', fontWeight: 600 }}>
+                        ● Unsaved changes
+                    </div>
+                )}
 
                 {!isLoggedIn ? (
                     <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '24rem', margin: '2.5rem auto 0', width: '100%' }}>
@@ -1148,6 +1175,44 @@ const AdminModal: React.FC<{
                                         )}
                                     </div>
                                 ))}
+
+                                {/* Save All Changes Button */}
+                                <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: `1px solid ${darkMode ? 'rgba(242,239,233,0.2)' : 'rgba(18,16,14,0.2)'}` }}>
+                                    {saveMessage && (
+                                        <div style={{
+                                            padding: '0.75rem',
+                                            marginBottom: '0.75rem',
+                                            background: saveMessage.type === 'success' ? (darkMode ? 'rgba(34,197,94,0.2)' : 'rgba(34,197,94,0.15)') : (darkMode ? 'rgba(239,68,68,0.2)' : 'rgba(239,68,68,0.15)'),
+                                            border: `1px solid ${saveMessage.type === 'success' ? '#22C55E' : '#EF4444'}`,
+                                            color: saveMessage.type === 'success' ? '#22C55E' : '#EF4444',
+                                            fontSize: '0.75rem',
+                                            fontWeight: 600,
+                                            textAlign: 'center'
+                                        }}>
+                                            {saveMessage.text}
+                                        </div>
+                                    )}
+                                    <button
+                                        onClick={handleSaveAllChanges}
+                                        disabled={!hasUnsavedChanges || isSaving}
+                                        className="font-sans"
+                                        style={{
+                                            width: '100%',
+                                            padding: '1rem',
+                                            background: hasUnsavedChanges ? '#22C55E' : (darkMode ? 'rgba(242,239,233,0.1)' : 'rgba(18,16,14,0.1)'),
+                                            color: hasUnsavedChanges ? '#FFF' : (darkMode ? 'rgba(242,239,233,0.4)' : 'rgba(18,16,14,0.4)'),
+                                            fontSize: '0.75rem',
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.1em',
+                                            fontWeight: 700,
+                                            border: 'none',
+                                            cursor: hasUnsavedChanges && !isSaving ? 'pointer' : 'not-allowed',
+                                            transition: 'all 0.2s ease'
+                                        }}
+                                    >
+                                        {isSaving ? 'Saving...' : hasUnsavedChanges ? '💾 Save All Changes to Supabase' : 'No Changes to Save'}
+                                    </button>
+                                </div>
                             </div>
                         )}
                     </div>
