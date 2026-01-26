@@ -119,21 +119,32 @@ const getShiftTimes = (staff: StaffMember, dateStr: string, shiftType: ShiftType
 
 import { supabase } from './supabaseClient';
 
-const FALLBACK_STAFF: StaffMember[] = [
-    { id: '1', name: 'Shane', role: 'Manager', cycleStartDate: '2024-01-01', patternOn: 5, patternOff: 2, shiftType: 'Normal', status: 'Permanent' },
-    { id: '2', name: 'Phil', role: 'Staff', cycleStartDate: '2024-01-01', patternOn: 5, patternOff: 2, shiftType: 'Normal', status: 'Permanent' },
-    { id: '3', name: 'Tiku', role: 'Staff', cycleStartDate: '2024-01-01', patternOn: 5, patternOff: 2, shiftType: 'Normal', status: 'Permanent' },
-    { id: '4', name: 'Kyra', role: 'Staff', cycleStartDate: '2024-01-01', patternOn: 5, patternOff: 2, shiftType: 'Normal', status: 'Permanent' },
-    { id: '5', name: 'Angie', role: 'Staff', cycleStartDate: '2024-01-01', patternOn: 5, patternOff: 2, shiftType: 'Normal', status: 'Permanent' },
-    { id: '6', name: 'Selinah', role: 'Staff', cycleStartDate: '2024-01-01', patternOn: 5, patternOff: 2, shiftType: 'Normal', status: 'Permanent' },
-];
+// Fallback staff removed to prevent data flashing. Initial state is now empty or from local storage.
 
 const useRosterData = () => {
-    const [staff, setStaff] = useState<StaffMember[]>(FALLBACK_STAFF);
+    const [staff, setStaff] = useState<StaffMember[]>(() => {
+        const local = localStorage.getItem('protea_staff_data');
+        try {
+            return local ? JSON.parse(local) : [];
+        } catch (e) {
+            return [];
+        }
+    });
     const [loading, setLoading] = useState(true);
 
     const fetchStaff = useCallback(async () => {
         try {
+            if (!supabase) {
+                console.warn('Supabase client not initialized. Using local data only.');
+                const local = localStorage.getItem('protea_staff_data');
+                if (local) {
+                    setStaff(JSON.parse(local));
+                }
+                // No error thrown, just graceful degradation or maybe we want to show an alert?
+                // For now, let's allow it to "load" empty so the user can verify the app works at least.
+                return;
+            }
+
             const { data, error } = await supabase
                 .from('staff')
                 .select('*')
@@ -230,6 +241,11 @@ const useRosterData = () => {
                 if (p.id && p.id.length < 5) return { ...p, id: undefined }; // Remove short IDs
                 return p;
             });
+
+            if (!supabase) {
+                alert('Supabase not configured. Changes saved locally only.');
+                return;
+            }
 
             const { data, error } = await supabase.from('staff').upsert(cleanPayload).select();
 
@@ -1150,7 +1166,7 @@ const App: React.FC = () => {
     const [isAdminOpen, setIsAdminOpen] = useState(false);
     const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
 
-    const { staff, updateStaffData } = useRosterData();
+    const { staff, updateStaffData, loading } = useRosterData();
 
     useEffect(() => {
         if (darkMode) document.documentElement.classList.add('dark');
@@ -1221,14 +1237,47 @@ const App: React.FC = () => {
                 />
 
                 <main style={{ marginBottom: '5rem' }}>
-                    <RosterGrid
-                        staff={staff}
-                        dates={dates}
-                        isAdmin={isAdminLoggedIn}
-                        onUpdateStaff={updateStaffData}
-                        displayMode={displayMode}
-                        darkMode={darkMode}
-                    />
+                    {loading && staff.length === 0 ? (
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            height: '50vh',
+                            gap: '1rem'
+                        }}>
+                            <div style={{
+                                width: '2rem',
+                                height: '2rem',
+                                border: `2px solid ${darkMode ? 'rgba(242,239,233,0.1)' : 'rgba(18,16,14,0.1)'}`,
+                                borderTopColor: darkMode ? '#F2EFE9' : '#12100E',
+                                borderRadius: '50%',
+                                animation: 'spin 1s linear infinite'
+                            }} />
+                            <div className="font-serif" style={{
+                                fontSize: '1.25rem',
+                                color: darkMode ? '#F2EFE9' : '#12100E',
+                                opacity: 0.6,
+                                letterSpacing: '0.05em'
+                            }}>
+                                Loading Roster...
+                            </div>
+                            <style>{`
+                                @keyframes spin {
+                                    to { transform: rotate(360deg); }
+                                }
+                            `}</style>
+                        </div>
+                    ) : (
+                        <RosterGrid
+                            staff={staff}
+                            dates={dates}
+                            isAdmin={isAdminLoggedIn}
+                            onUpdateStaff={updateStaffData}
+                            displayMode={displayMode}
+                            darkMode={darkMode}
+                        />
+                    )}
 
                     {/* Legend */}
                     <div className="font-sans" style={{

@@ -7,4 +7,15 @@ if (!supabaseUrl || !supabaseAnonKey) {
     console.error('Missing Supabase environment variables');
 }
 
-export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '');
+export const supabase = (() => {
+    if (!supabaseUrl || !supabaseAnonKey) {
+        console.error('Missing Supabase environment variables');
+        return undefined;
+    }
+    try {
+        return createClient(supabaseUrl, supabaseAnonKey);
+    } catch (error) {
+        console.error('Error initializing Supabase client:', error);
+        return undefined;
+    }
+})();
