@@ -201,7 +201,7 @@ const useRosterData = () => {
 
             // Update existing staff
             if (existingStaff.length > 0) {
-                const updatePayload = existingStaff.map((person, index) => ({
+                const updatePayload = existingStaff.map((person) => ({
                     id: person.id,
                     name: person.name,
                     role: person.role,
