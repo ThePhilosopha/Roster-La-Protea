@@ -1015,7 +1015,7 @@ const AdminModal: React.FC<{
                             <div style={{ overflowY: 'auto', paddingRight: '0.5rem' }}>
                                 {!isAdding ? (
                                     <button
-                                        onClick={() => { setIsAdding(true); setEditForm({ id: `new-${Date.now()}`, patternOn: 5, patternOff: 2, shiftType: 'Normal', status: 'Permanent', cycleStartDate: '2024-01-01' }); }}
+                                        onClick={() => { setIsAdding(true); setEditForm({ id: `new-${Date.now()}`, patternOn: 5, patternOff: 2, shiftType: 'Normal', status: 'Permanent', cycleStartDate: getLocalDateString(new Date()) }); }}
                                         className="font-sans"
                                         style={{
                                             width: '100%',
@@ -1066,6 +1066,26 @@ const AdminModal: React.FC<{
                                             onChange={e => setEditForm({ ...editForm, cycleStartDate: e.target.value })}
                                             style={{ width: '100%', padding: '0.5rem', background: 'transparent', borderBottom: `1px solid ${borderColor}`, border: 'none', borderBottomWidth: '1px', borderBottomStyle: 'solid', color: textColor }}
                                         />
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            <select
+                                                value={editForm.status || 'Permanent'}
+                                                onChange={e => setEditForm({ ...editForm, status: e.target.value as EmploymentStatus })}
+                                                className="font-sans"
+                                                style={{ flex: 1, padding: '0.5rem', background: darkMode ? '#2A231E' : '#F2EFE9', borderBottom: `1px solid ${borderColor}`, border: 'none', borderBottomWidth: '1px', borderBottomStyle: 'solid', color: textColor, fontSize: '0.75rem', cursor: 'pointer' }}
+                                            >
+                                                <option value="Permanent">Permanent</option>
+                                                <option value="Casual">Casual</option>
+                                            </select>
+                                            <select
+                                                value={editForm.shiftType || 'Normal'}
+                                                onChange={e => setEditForm({ ...editForm, shiftType: e.target.value as ShiftType })}
+                                                className="font-sans"
+                                                style={{ flex: 1, padding: '0.5rem', background: darkMode ? '#2A231E' : '#F2EFE9', borderBottom: `1px solid ${borderColor}`, border: 'none', borderBottomWidth: '1px', borderBottomStyle: 'solid', color: textColor, fontSize: '0.75rem', cursor: 'pointer' }}
+                                            >
+                                                <option value="Normal">Full Shift</option>
+                                                <option value="Half">Half Shift</option>
+                                            </select>
+                                        </div>
                                         <div style={{ display: 'flex', gap: '0.5rem', paddingTop: '0.5rem' }}>
                                             <button
                                                 onClick={handleSaveStaff}
@@ -1119,6 +1139,26 @@ const AdminModal: React.FC<{
                                                     onChange={e => setEditForm({ ...editForm, cycleStartDate: e.target.value })}
                                                     style={{ width: '100%', padding: '0.5rem', background: 'transparent', borderBottom: `1px solid ${borderColor}`, border: 'none', borderBottomWidth: '1px', borderBottomStyle: 'solid', color: textColor }}
                                                 />
+                                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                    <select
+                                                        value={editForm.status || 'Permanent'}
+                                                        onChange={e => setEditForm({ ...editForm, status: e.target.value as EmploymentStatus })}
+                                                        className="font-sans"
+                                                        style={{ flex: 1, padding: '0.5rem', background: darkMode ? '#2A231E' : '#F2EFE9', borderBottom: `1px solid ${borderColor}`, border: 'none', borderBottomWidth: '1px', borderBottomStyle: 'solid', color: textColor, fontSize: '0.75rem', cursor: 'pointer' }}
+                                                    >
+                                                        <option value="Permanent">Permanent</option>
+                                                        <option value="Casual">Casual</option>
+                                                    </select>
+                                                    <select
+                                                        value={editForm.shiftType || 'Normal'}
+                                                        onChange={e => setEditForm({ ...editForm, shiftType: e.target.value as ShiftType })}
+                                                        className="font-sans"
+                                                        style={{ flex: 1, padding: '0.5rem', background: darkMode ? '#2A231E' : '#F2EFE9', borderBottom: `1px solid ${borderColor}`, border: 'none', borderBottomWidth: '1px', borderBottomStyle: 'solid', color: textColor, fontSize: '0.75rem', cursor: 'pointer' }}
+                                                    >
+                                                        <option value="Normal">Full Shift</option>
+                                                        <option value="Half">Half Shift</option>
+                                                    </select>
+                                                </div>
                                                 <div style={{ display: 'flex', gap: '0.5rem', paddingTop: '0.5rem' }}>
                                                     <button
                                                         onClick={handleSaveStaff}
